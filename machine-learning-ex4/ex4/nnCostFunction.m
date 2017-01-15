@@ -29,7 +29,8 @@ m = size(X, 1);
 J = 0;
 Theta1_grad = zeros(size(Theta1));
 Theta2_grad = zeros(size(Theta2));
-
+D1=Theta1_grad;
+D2=Theta2_grad;
 % ====================== YOUR CODE HERE ======================
 % Instructions: You should complete the code by working through the
 %               following parts.
@@ -62,14 +63,46 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+X=[ones(m,1) X];
+temp=sigmoid(X*Theta1');
+temp_m=size(temp, 1);
+temp=[ones(temp_m,1) temp];
+h=sigmoid(temp*Theta2');
+y_temp=zeros(size(h));
+for i=1:m
+    y_temp(i,:)=1:num_labels==y(i);
+end
+temp1=sum(Theta1.*Theta1);
+temp2=sum(Theta2.*Theta2);
+J=sum(sum((-log(h).*y_temp-log(1-h).*(1-y_temp))))/m+lambda/2/m*(sum(temp1)-temp1(1)+sum(temp2)-temp2(1));
 
 
-
-
-
-
-
-
+for i=1:m
+  % d=h(i,:)-y(i);
+  % d2=(d*Theta2).*sigmoidGradient(temp(i,:)); % 1x26
+  
+  %1 step
+  
+  a1=X(i,:);   %1x401
+  z2=a1*Theta1';  %1x25
+  a2=sigmoid(z2); %1x25
+  a2=[1 a2];       %1x26
+  z3=a2*Theta2';  %1x10
+  a3=sigmoid(z3);  %1x10
+  %2 step
+  d3=a3-y_temp(i,:); %1x10
+  %3 step
+  z2_t=[1 z2];
+  d2=d3*Theta2.*sigmoidGradient(z2_t); %1x26
+  %4 step
+  d2_t=d2(2:end);
+  D1=D1+d2_t'*a1; %25x401
+  D2=D2+d3'*a2; %10x26
+end
+Theta1_grad(:,1)=D1(:,1)/m;
+Theta1_grad(:,2:end)=D1(:,2:end)/m+lambda/m*Theta1(:,2:end);
+Theta2_grad(:,1)=D2(:,1)/m;
+Theta2_grad(:,2:end)=D2(:,2:end)/m+lambda/m*Theta2(:,2:end);
 
 
 
